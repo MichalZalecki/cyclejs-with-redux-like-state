@@ -1,0 +1,20 @@
+{
+  "extends": "airbnb",
+  "parser": "babel-eslint",
+  "settings": {
+    "import/resolver": {
+      "webpack": { "config": "./webpack/webpack.prod.config.js" }
+    },
+    "react": {
+      "pragma": "hJSX"
+    }
+  },
+  "env": {
+    "jasmine": true
+  },
+  "rules": {
+    "quotes": ["error", "double"],
+    "no-unused-vars": [2, { "vars": "local", "args": "after-used", "argsIgnorePattern": "^_" }],
+    "new-cap": 0
+  }
+}
