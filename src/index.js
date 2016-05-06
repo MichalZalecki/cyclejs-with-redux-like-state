@@ -10,7 +10,7 @@ import CounterPage from "src/layout/pages/CounterPage";
 import AboutPage from "src/layout/pages/AboutPage";
 
 export function model(actions$) {
-  const initialState$ = Rx.Observable.of({ count: 100 });
+  const initialState$ = Rx.Observable.of({ count: 0 });
 
   const incrementCounter$ = actions$
     .filter(({ type }) => type === "INCREMENT_COUNTER")
@@ -50,17 +50,15 @@ function main(sources) {
   const match$ = sources.router.define({
     "/": HomePage,
     "/counter": CounterPage,
-    // TODO: helper withParams
-    "/about/:name": name => srcs => AboutPage({ ...srcs, props$: Rx.Observable.of({ name }) }),
+    "/about/:name": name => sources => AboutPage({ ...sources, props$: Rx.Observable.of({ name }) }),
   });
 
-  const page$ = match$.map(({ path, value }) =>
-    value({ ...sources, router: sources.router.path(path), state$: proxyState$ }));
+  const page$ = match$.map(({ path, value }) => {
+    return value({ ...sources, router: sources.router.path(path), state$: proxyState$ });
+  }).shareReplay();
 
-  const pageDOM$ = page$.pluck("DOM");
-  const pageActions$ = page$.filter(page => !!page.actions$).flatMap(page => page.actions$);
-
-  pageActions$.subscribe(::console.info); // never fires
+  const pageDOM$ = page$.flatMap(page => page.DOM);
+  const pageActions$ = page$.pluck("actions$").filter(Boolean).mergeAll();
 
   const state$ = model(pageActions$);
 
